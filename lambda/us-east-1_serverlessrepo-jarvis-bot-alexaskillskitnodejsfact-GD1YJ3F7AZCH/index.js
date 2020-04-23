@@ -42,7 +42,7 @@ const LaunchRequest = {
   },
   async handle(handlerInput) {
     
-    var speechOutput = `Hello I'm Jarvis. Your Intelligent process manager. `;
+    var speechOutput = `Hello, Jarvis here. Your Intelligent process manager. `;
     const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
 
     await auth(loginOptions).then((response) => {
@@ -83,7 +83,7 @@ const TrelloBoards = {
     const API_TOKEN = SessionAttributes.IntegrationsStatus.data.trello_creds.trelloAPISecret;
     const BOARD_ID = SessionAttributes.IntegrationsStatus.data.trello_creds.board; 
 
-    var cardsURL = `https://api.trello.com/1/boards/${BOARD_ID}/cards?key=${API_KEY}&token=${API_TOKEN}`;
+    var listsURL = `https://api.trello.com/1/boards/${BOARD_ID}/lists?key=${API_KEY}&token=${API_TOKEN}`;
     var boardURL = `https://api.trello.com/1/boards/${BOARD_ID}?key=${API_KEY}&token=${API_TOKEN}`;
 
     await getRemoteData(boardURL)
@@ -106,6 +106,65 @@ const TrelloBoards = {
       speechOutput = err.message;
     });
 
+    await getRemoteData(listsURL)
+      .then((response) => {
+        const data = JSON.parse(response);
+        if(data.length === 0){
+          speechOutput += `I can see you don't have any task created yet. Please visit trello.com and create tasks.`;
+          return handlerInput.responseBuilder
+          .speak(speechOutput)
+          .reprompt(speechOutput)
+          .withShouldEndSession(true)
+          .getResponse();
+        }
+        else{
+          speechOutput += `You have the following lists in your ${SessionAttributes.BoardName}. `;
+          for(var i=0; i<data.length; i++){
+            speechOutput+=`List ${i+1}: ${data[i].name}. `;
+          }
+          speechOutput += `Which one would you like to know? `;
+        }
+      })
+      .catch((err) => {
+        //set an optional error message here
+        speechOutput = err.message;
+      });
+
+    return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(speechOutput)
+      .withShouldEndSession(false)
+      .getResponse();
+
+  },
+};
+
+const TrelloLists = {
+  canHandle(handlerInput) {
+    return (handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'trelloList');
+  },
+  async handle(handlerInput) {
+
+    const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+
+    var listName;
+    if(handlerInput.requestEnvelope
+      && handlerInput.requestEnvelope.request
+      && handlerInput.requestEnvelope.request.intent
+      && handlerInput.requestEnvelope.request.intent.slots
+      && handlerInput.requestEnvelope.request.intent.slots.listName
+      && handlerInput.requestEnvelope.request.intent.slots.listName.resolutions
+      && handlerInput.requestEnvelope.request.intent.slots.listName.resolutions.resolutionsPerAuthority[0]){
+      listName = handlerInput.requestEnvelope.request.intent.slots.listName.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+    }
+    SessionAttributes.ListName = listName;
+    const API_KEY = SessionAttributes.IntegrationsStatus.data.trello_creds.trelloAPIkey;
+    const API_TOKEN = SessionAttributes.IntegrationsStatus.data.trello_creds.trelloAPISecret;
+    const BOARD_ID = SessionAttributes.IntegrationsStatus.data.trello_creds.board; 
+
+    var cardsURL = `https://api.trello.com/1/boards/${BOARD_ID}/cards?key=${API_KEY}&token=${API_TOKEN}`;
+
     await getRemoteData(cardsURL)
       .then((response) => {
         const data = JSON.parse(response);
@@ -118,7 +177,10 @@ const TrelloBoards = {
           .getResponse();
         }
         else{
-          speechOutput += `You have the following tasks in your ${SessionAttributes.BoardName}. `;
+          speechOutput = `You have the following tasks in your ${listName}. `;
+          for(var i=0; i<data.length; i++){
+            speechOutput +=`Task ${i+1}: ${data[i].name}. `;
+          }
         }
       })
       .catch((err) => {
@@ -224,6 +286,7 @@ exports.handler = skillBuilder
   .addRequestHandlers(
     LaunchRequest,
     TrelloBoards,
+    TrelloLists,
     HelpIntentHandler,
     CancelAndStopIntentHandler,
     SessionEndedRequestHandler,
