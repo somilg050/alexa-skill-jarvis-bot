@@ -1,0 +1,21 @@
+{
+  "manifest": {
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "serverlessrepo-jarvis-bot-alexaskillskitnodejsfact-GD1YJ3F7AZCH",
+          "sourceDir": "lambda/us-east-1_serverlessrepo-jarvis-bot-alexaskillskitnodejsfact-GD1YJ3F7AZCH"
+        },
+        "interfaces": []
+      }
+    },
+    "manifestVersion": "1.0",
+    "publishingInformation": {
+      "locales": {
+        "en-US": {
+          "name": "Jarvis-Bot"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "deploy_settings": {
+    "default": {
+      "skill_id": "amzn1.ask.skill.27afd7d8-ecb1-48cb-8187-28c3878621c5",
+      "was_cloned": false,
+      "merge": {},
+      "resources": {
+        "manifest": {
+          "eTag": "6f097ad7936445dc2befef302e22aca0"
+        },
+        "lambda": [
+          {
+            "alexaUsage": [
+              "custom/default"
+            ],
+            "arn": "arn:aws:lambda:us-east-1:455994645454:function:serverlessrepo-jarvis-bot-alexaskillskitnodejsfact-GD1YJ3F7AZCH",
+            "awsRegion": "us-east-1",
+            "codeUri": "lambda/us-east-1_serverlessrepo-jarvis-bot-alexaskillskitnodejsfact-GD1YJ3F7AZCH",
+            "functionName": "serverlessrepo-jarvis-bot-alexaskillskitnodejsfact-GD1YJ3F7AZCH",
+            "handler": "index.handler",
+            "revisionId": "e6ed6719-ed6a-434a-8e1b-547a474c9864",
+            "runtime": "nodejs10.x"
+          }
+        ]
+      }
+    }
+  }
+}
