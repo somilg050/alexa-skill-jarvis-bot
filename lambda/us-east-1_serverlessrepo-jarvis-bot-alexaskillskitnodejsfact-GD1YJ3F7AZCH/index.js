@@ -21,9 +21,7 @@ var integrationsOptions = { method: 'GET',
   headers: { 
     'postman-token': '71f48851-d2eb-2156-c210-96baff7ebebd',
     'cache-control': 'no-cache',
-    token: `eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InB
-    yaXllc2guc3JpdjIwMTdAZ21haWwuY29tIiwiZXhwaXJ5X2RhdGUiOjE1ODc3
-    NTEyMTkuNjcwMzQ1fQ.o9Yay1TbrJZxC972ns5IrgztsyF5qz6vUKch9m_2Umg`
+    'token': `eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InByaXllc2guc3JpdjIwMTdAZ21haWwuY29tIiwiZXhwaXJ5X2RhdGUiOjE1ODc3NTEyMTkuNjcwMzQ1fQ.o9Yay1TbrJZxC972ns5IrgztsyF5qz6vUKch9m_2Umg`
   } 
 };
 
@@ -31,7 +29,6 @@ async function auth(options) {
   return new Promise((resolve) => {
     request(options, function (error, response, body) {
       if (error) throw new Error(error);
-      console.log(`statusCode: ${response.statusCode}`);
       console.log(body);
       setTimeout(() => resolve(response.body), 1000);
     });
@@ -52,7 +49,7 @@ const LaunchRequest = {
       SessionAttributes.LoginStatus = response;
     });
     
-    if(SessionAttributes.AuthStatus.statusCode === 200){
+    if(SessionAttributes.LoginStatus.statusCode === 200){
       speechOutput += `You are now successfully Logged In. How can I help you today? `;
     }else{
       speechOutput += `There was some error while logging into the system. Please try Logging again in the system. Thank You. `;
@@ -77,21 +74,43 @@ const TrelloBoards = {
     const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
 
     await auth(integrationsOptions).then((response) => {
-      SessionAttributes.IntegrationsStatus = response;
+      SessionAttributes.IntegrationsStatus = JSON.parse(response);
     });
 
-    var speechOutput = 'Welcome to Trello Boards';
+    var speechOutput = 'Welcome to Trello Boards. ';
 
-    const API_KEY = SessionAttributes.IntegrationsStatus.trelloAPIkey;
-    const API_TOKEN= SessionAttributes.IntegrationsStatus.trelloAPISecret;
-    
-    var URL = `https://api.trello.com/1/members/me/boards?key=${API_KEY}&token=${API_TOKEN}`;
+    const API_KEY = SessionAttributes.IntegrationsStatus.data.trello_creds.trelloAPIkey;
+    const API_TOKEN = SessionAttributes.IntegrationsStatus.data.trello_creds.trelloAPISecret;
+    const BOARD_ID = SessionAttributes.IntegrationsStatus.data.trello_creds.board; 
 
-    await getRemoteData(URL)
+    var cardsURL = `https://api.trello.com/1/boards/${BOARD_ID}/cards?key=${API_KEY}&token=${API_TOKEN}`;
+    var boardURL = `https://api.trello.com/1/boards/${BOARD_ID}?key=${API_KEY}&token=${API_TOKEN}`;
+
+    await getRemoteData(boardURL)
+    .then((response) => {
+      const data = JSON.parse(response);
+      if(data.length === 0){
+        speechOutput += `I can see, You don't have any trello boards created. Please visit trello.com and create trello boards.`;
+        return handlerInput.responseBuilder
+        .speak(speechOutput)
+        .reprompt(speechOutput)
+        .withShouldEndSession(true)
+        .getResponse();
+      }
+      else{
+        SessionAttributes.BoardName = data.name;
+      }
+    })
+    .catch((err) => {
+      //set an optional error message here
+      speechOutput = err.message;
+    });
+
+    await getRemoteData(cardsURL)
       .then((response) => {
         const data = JSON.parse(response);
         if(data.length === 0){
-          speechOutput = `I can see you don't have any existing trello boards. Please visit trello.com and create trello boards.`;
+          speechOutput += `I can see you don't have any task created yet. Please visit trello.com and create tasks.`;
           return handlerInput.responseBuilder
           .speak(speechOutput)
           .reprompt(speechOutput)
@@ -99,7 +118,7 @@ const TrelloBoards = {
           .getResponse();
         }
         else{
-          speechOutput = `I can see you have following trello boards created `;
+          speechOutput += `You have the following tasks in your ${SessionAttributes.BoardName}. `;
         }
       })
       .catch((err) => {
@@ -109,7 +128,7 @@ const TrelloBoards = {
 
     return handlerInput.responseBuilder
       .speak(speechOutput)
-      .reprompt(`I can tell you the current price of Bitcoin and Ethereum. What can I help you with?`)
+      .reprompt(speechOutput)
       .withShouldEndSession(false)
       .getResponse();
 
