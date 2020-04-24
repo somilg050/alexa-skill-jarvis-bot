@@ -119,9 +119,13 @@ const TrelloBoards = {
         }
         else{
           speechOutput += `You have the following lists in your ${SessionAttributes.BoardName}. `;
+          var listIdPair = {};
           for(var i=0; i<data.length; i++){
             speechOutput+=`List ${i+1}: ${data[i].name}. `;
+            listIdPair[data[i].name] = (data[i].id);
+            console.log(listIdPair[data[i].name]);
           }
+          SessionAttributes.ListIdPair = listIdPair;
           speechOutput += `Which one would you like to know? `;
         }
       })
@@ -161,9 +165,10 @@ const TrelloLists = {
     SessionAttributes.ListName = listName;
     const API_KEY = SessionAttributes.IntegrationsStatus.data.trello_creds.trelloAPIkey;
     const API_TOKEN = SessionAttributes.IntegrationsStatus.data.trello_creds.trelloAPISecret;
-    const BOARD_ID = SessionAttributes.IntegrationsStatus.data.trello_creds.board; 
+    const LIST_ID = SessionAttributes.ListIdPair[listName];
 
-    var cardsURL = `https://api.trello.com/1/boards/${BOARD_ID}/cards?key=${API_KEY}&token=${API_TOKEN}`;
+    var cardsURL = `https://api.trello.com/1/lists/${LIST_ID}/cards?key=${API_KEY}&token=${API_TOKEN}`;
+    console.log(cardsURL);
 
     await getRemoteData(cardsURL)
       .then((response) => {
@@ -180,6 +185,9 @@ const TrelloLists = {
           speechOutput = `You have the following tasks in your ${listName}. `;
           for(var i=0; i<data.length; i++){
             speechOutput +=`Task ${i+1}: ${data[i].name}. `;
+            if(data[i].desc.length >= 1){
+              speechOutput += `With Description: ${data[i].desc} `;
+            }
           }
         }
       })
