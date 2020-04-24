@@ -25,6 +25,22 @@ var integrationsOptions = { method: 'GET',
   } 
 };
 
+var createTaskOptions = { method: 'POST',
+  url: 'https://api.trello.com/1/cards',
+  qs: { key: 'a12ac0b756d26258be815a399da71296',
+    token: 'ba013bc39ffd37dde296e20235757e73fb79af5409688ff4193890382aa66fd4',
+    idList: '',
+    name: ''
+  },
+  headers: { 'cache-control': 'no-cache',
+    Connection: 'keep-alive',
+    'Content-Length': '0',
+    Host: 'api.trello.com',
+    'Postman-Token': '225aa60b-ce35-4341-b5ab-703244c7c441,e4aa5e5a-36ea-4610-8b7d-c19aaac0ff88',
+    'Cache-Control': 'no-cache',
+  } 
+};
+
 async function auth(options) {
   return new Promise((resolve) => {
     request(options, function (error, response, body) {
@@ -123,7 +139,7 @@ const TrelloBoards = {
           for(var i=0; i<data.length; i++){
             speechOutput+=`List ${i+1}: ${data[i].name}. `;
             listIdPair[data[i].name] = (data[i].id);
-            console.log(listIdPair[data[i].name]);
+            //console.log(listIdPair[data[i].name]);
           }
           SessionAttributes.ListIdPair = listIdPair;
           speechOutput += `Which one would you like to know? `;
@@ -151,8 +167,9 @@ const TrelloLists = {
   async handle(handlerInput) {
 
     const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
-
+    var speechOutput;
     var listName;
+    
     if(handlerInput.requestEnvelope
       && handlerInput.requestEnvelope.request
       && handlerInput.requestEnvelope.request.intent
@@ -188,6 +205,12 @@ const TrelloLists = {
             if(data[i].desc.length >= 1){
               speechOutput += `With Description: ${data[i].desc} `;
             }
+            if(data[i].due){
+              var date = new Date(data[i].due);
+              date = date.toString();
+              date = date.replace(' GMT+0000', '');
+              speechOutput += `With Due date: ${date} `;
+            }
           }
         }
       })
@@ -195,6 +218,36 @@ const TrelloLists = {
         //set an optional error message here
         speechOutput = err.message;
       });
+
+    return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(speechOutput)
+      .withShouldEndSession(false)
+      .getResponse();
+
+  },
+};
+
+const CreateTrelloTasks = {
+  canHandle(handlerInput) {
+    return (handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'createTask');
+  },
+  async handle(handlerInput) {
+
+    const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+    const request = handlerInput.requestEnvelope.request;
+    var speechOutput = `Problem occured while creating task. Check logs for more detail. `;
+
+    createTaskOptions.qs.name = request.intent.slots.taskName.value;
+    var listName = request.intent.slots.listName.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+    createTaskOptions.qs.idList = SessionAttributes.ListIdPair[listName];
+
+    await auth(createTaskOptions).then((response) => {
+      if(response){
+        speechOutput = `Task created successfully under ${listName}. `;
+      };
+    });
 
     return handlerInput.responseBuilder
       .speak(speechOutput)
@@ -295,6 +348,7 @@ exports.handler = skillBuilder
     LaunchRequest,
     TrelloBoards,
     TrelloLists,
+    CreateTrelloTasks,
     HelpIntentHandler,
     CancelAndStopIntentHandler,
     SessionEndedRequestHandler,
