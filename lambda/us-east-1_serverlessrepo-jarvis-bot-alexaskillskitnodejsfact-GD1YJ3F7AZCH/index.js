@@ -41,6 +41,36 @@ var createTaskOptions = { method: 'POST',
   } 
 };
 
+var githubOptions = { method: 'GET',
+  url: 'https://codefundo2019.tk/github',
+  headers: { 'postman-token': '4e0b5a78-d39e-b56b-e089-7b8bca37f654',
+    'cache-control': 'no-cache',
+    token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InByaXllc2guc3JpdjIwMTdAZ21haWwuY29tIiwiZXhwaXJ5X2RhdGUiOjE1ODc3ODQ4NDQuMTAxNTI4fQ.nrYv53do9NIRzQcJvKEJ8hDgi8_Slezr5TO7j0I9Qik'
+  } 
+};
+
+var jarvisBotOptions = { method: 'GET',
+  url: 'https://codefundo2019.tk/installation',
+  headers: 
+  { 'postman-token': 'f11b9078-e89a-4500-b26e-ad719d8ffec5',
+     'cache-control': 'no-cache',
+     reqddocker: 'false',
+     os: 'ubuntu',
+     projectname: '',
+     token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InByaXllc2guc3JpdjIwMTdAZ21haWwuY29tIiwiZXhwaXJ5X2RhdGUiOjE1ODc3ODQ4NDQuMTAxNTI4fQ.nrYv53do9NIRzQcJvKEJ8hDgi8_Slezr5TO7j0I9Qik'
+  } 
+};
+
+var projectStatusOptions = { method: 'GET',
+  url: 'https://codefundo2019.tk/status/project',
+  headers: 
+   { 'postman-token': 'fa69cc80-209c-6703-0bd0-1960daa9f4fc',
+     'cache-control': 'no-cache',
+     projectname: 'jarvis-apis',
+     token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InByaXllc2guc3JpdjIwMTdAZ21haWwuY29tIiwiZXhwaXJ5X2RhdGUiOjE1ODc3ODQ4NDQuMTAxNTI4fQ.nrYv53do9NIRzQcJvKEJ8hDgi8_Slezr5TO7j0I9Qik'
+   } 
+};
+
 async function auth(options) {
   return new Promise((resolve) => {
     request(options, function (error, response, body) {
@@ -78,6 +108,125 @@ const LaunchRequest = {
       .reprompt(speechOutput)
       .getResponse();
   }
+};
+
+const ProjectStatus = {
+  canHandle(handlerInput) {
+    return (handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'projectStatus');
+  },
+  async handle(handlerInput) {
+    var projectName;
+    var speechOutput;
+    if(handlerInput.requestEnvelope
+      && handlerInput.requestEnvelope.request
+      && handlerInput.requestEnvelope.request.intent
+      && handlerInput.requestEnvelope.request.intent.slots
+      && handlerInput.requestEnvelope.request.intent.slots.software
+      && handlerInput.requestEnvelope.request.intent.slots.software.resolutions
+      && handlerInput.requestEnvelope.request.intent.slots.software.resolutions.resolutionsPerAuthority[0]){
+      projectName = handlerInput.requestEnvelope.request.intent.slots.listName.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+    } else{
+      speechOutput = `Sorry, but we don't have any status for this project. What can I help you with? `;
+      
+      return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(speechOutput)
+      .withShouldEndSession(false)
+      .getResponse();
+    }
+    projectStatusOptions.headers.projectname = projectName;
+
+    await auth(projectStatusOptions).then((response) => {
+      var projectStatus = JSON.parse(response);
+      var progress = projectStatus.release_data.closed_issues/(projectStatus.release_data.closed_issues+projectStatus.release_data.open_issues);
+      var createdDate = new Date(projectStatus.release_data.created_at);
+      var dueDate = new Date(projectStatus.release_data.due_on);
+      var urgentIssues;
+      for(var i = 0; i<projectStatus.release_data.urgent_issues.length; i++){
+        urgentIssues+=`${projectStatus.release_data.urgent_issues[i].title}. `;
+      }
+
+      speechOutput = `The earliest milestone is ${projectStatus.title} which was created on ${createdDate.toString()} has
+       to be completed by ${dueDate}. Current progress on the release is ${progress} and the urgent issues pending for this 
+      release are ${urgentIssues}`;
+    });
+
+    return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(speechOutput)
+      .withShouldEndSession(false)
+      .getResponse();
+  },
+};
+
+const GithubInstallation = {
+  canHandle(handlerInput) {
+    return (handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'gitGuide');
+  },
+  async handle(handlerInput) {
+
+    const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+    const request = handlerInput.requestEnvelope.request;
+    var speechOutput;
+    var softwareName = request.intent.slots.software.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+    jarvisBotOptions.headers.projectname = softwareName;
+    SessionAttributes.SoftwareName = softwareName;
+    
+    SessionAttributes.githubOptions = githubOptions;
+    await auth(githubOptions).then((response) => {
+      var res = JSON.parse(response);
+      var softwareNames = [];
+      for(var i = 0; i<res['data'].length; i++){
+        softwareNames.push(res.data[i].name);
+      }
+      SessionAttributes.SoftwareNames = softwareNames;
+    });
+
+    var dockerStatus = false;
+    var status = request.intent.slots.dockerStatus.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+
+    if(status === `locally`){
+      OS = request.intent.slots.OS.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+      jarvisBotOptions.headers.os = OS;
+    }
+    else{
+      jarvisBotOptions.headers.reqddocker = true;
+      dockerStatus = true;
+    }
+
+    await auth(jarvisBotOptions).then((response) => {
+      SessionAttributes.JarvisStatus = JSON.parse(response);
+    });
+
+    if(dockerStatus){
+      speechOutput = SessionAttributes.JarvisStatus.message;
+    } else{
+      speechOutput = `Instructions to install on ${OS}: `;
+      if(OS==='ubuntu' || OS==='redhat' || OS==='macos'){
+        speechOutput+= `Open the terminal and follow these commands. Firstly we will do.. `;
+      }
+      else{
+        speechOutput+=`Open the command prompt and follow these steps. Firstly we will do.. `;
+      }
+      for(var i=0; i<SessionAttributes.JarvisStatus.instructions.length; i++){
+        if(i===SessionAttributes.JarvisStatus.instructions.length-1){
+          speechOutput += `finally do ${SessionAttributes.JarvisStatus.instructions[i]}.`;
+        }
+        else{
+          speechOutput += `${SessionAttributes.JarvisStatus.instructions[i]}. Then `;
+        }
+      }
+    }
+    speechOutput += ` Your Product Installation Guide is completed. Now how can I help you? `;
+
+    return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(speechOutput)
+      .withShouldEndSession(false)
+      .getResponse();
+  },
 };
 
 const TrelloBoards = {
@@ -224,7 +373,6 @@ const TrelloLists = {
       .reprompt(speechOutput)
       .withShouldEndSession(false)
       .getResponse();
-
   },
 };
 
@@ -239,9 +387,11 @@ const CreateTrelloTasks = {
     const request = handlerInput.requestEnvelope.request;
     var speechOutput = `Problem occured while creating task. Check logs for more detail. `;
 
+    var date = new Date(`${request.intent.slots.dueDate.value}T${request.intent.slots.dueTime.value}`);
     createTaskOptions.qs.name = request.intent.slots.taskName.value;
     var listName = request.intent.slots.listName.resolutions.resolutionsPerAuthority[0].values[0].value.name;
     createTaskOptions.qs.idList = SessionAttributes.ListIdPair[listName];
+    createTaskOptions.qs.due = date;
 
     await auth(createTaskOptions).then((response) => {
       if(response){
@@ -346,6 +496,8 @@ const skillBuilder = Alexa.SkillBuilders.custom();
 exports.handler = skillBuilder
   .addRequestHandlers(
     LaunchRequest,
+    GithubInstallation,
+    ProjectStatus,
     TrelloBoards,
     TrelloLists,
     CreateTrelloTasks,
