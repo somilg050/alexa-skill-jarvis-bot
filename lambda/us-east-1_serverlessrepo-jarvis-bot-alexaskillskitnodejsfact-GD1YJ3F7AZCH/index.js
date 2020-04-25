@@ -133,10 +133,10 @@ const BuildStatus = {
       && handlerInput.requestEnvelope.request
       && handlerInput.requestEnvelope.request.intent
       && handlerInput.requestEnvelope.request.intent.slots
-      && handlerInput.requestEnvelope.request.intent.slots.software
-      && handlerInput.requestEnvelope.request.intent.slots.software.resolutions
-      && handlerInput.requestEnvelope.request.intent.slots.software.resolutions.resolutionsPerAuthority[0]){
-      projectName = handlerInput.requestEnvelope.request.intent.slots.software.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+      && handlerInput.requestEnvelope.request.intent.slots.project
+      && handlerInput.requestEnvelope.request.intent.slots.project.resolutions
+      && handlerInput.requestEnvelope.request.intent.slots.project.resolutions.resolutionsPerAuthority[0]){
+      projectName = handlerInput.requestEnvelope.request.intent.slots.project.resolutions.resolutionsPerAuthority[0].values[0].value.name;
     } else{
       speechOutput = `Sorry, but we don't have any status for this project. What can I help you with? `;
       

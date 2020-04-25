@@ -18,7 +18,7 @@
             "codeUri": "lambda/us-east-1_serverlessrepo-jarvis-bot-alexaskillskitnodejsfact-GD1YJ3F7AZCH",
             "functionName": "serverlessrepo-jarvis-bot-alexaskillskitnodejsfact-GD1YJ3F7AZCH",
             "handler": "index.handler",
-            "revisionId": "02855e8e-e93a-44fb-aaa9-6243f6deaced",
+            "revisionId": "ba6789d2-5b66-4d57-a210-72d4137345db",
             "runtime": "nodejs10.x"
           }
         ]
