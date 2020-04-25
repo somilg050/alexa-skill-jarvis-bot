@@ -21,7 +21,7 @@ var integrationsOptions = { method: 'GET',
   headers: { 
     'postman-token': '71f48851-d2eb-2156-c210-96baff7ebebd',
     'cache-control': 'no-cache',
-    'token': `eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InByaXllc2guc3JpdjIwMTdAZ21haWwuY29tIiwiZXhwaXJ5X2RhdGUiOjE1ODc3NTEyMTkuNjcwMzQ1fQ.o9Yay1TbrJZxC972ns5IrgztsyF5qz6vUKch9m_2Umg`
+    'token': ``
   } 
 };
 
@@ -45,7 +45,7 @@ var githubOptions = { method: 'GET',
   url: 'https://codefundo2019.tk/github',
   headers: { 'postman-token': '4e0b5a78-d39e-b56b-e089-7b8bca37f654',
     'cache-control': 'no-cache',
-    token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InByaXllc2guc3JpdjIwMTdAZ21haWwuY29tIiwiZXhwaXJ5X2RhdGUiOjE1ODc3ODQ4NDQuMTAxNTI4fQ.nrYv53do9NIRzQcJvKEJ8hDgi8_Slezr5TO7j0I9Qik'
+    token: ''
   } 
 };
 
@@ -57,7 +57,7 @@ var jarvisBotOptions = { method: 'GET',
      reqddocker: 'false',
      os: 'ubuntu',
      projectname: '',
-     token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InByaXllc2guc3JpdjIwMTdAZ21haWwuY29tIiwiZXhwaXJ5X2RhdGUiOjE1ODc3ODQ4NDQuMTAxNTI4fQ.nrYv53do9NIRzQcJvKEJ8hDgi8_Slezr5TO7j0I9Qik'
+     token: ''
   } 
 };
 
@@ -67,7 +67,7 @@ var projectStatusOptions = { method: 'GET',
    { 'postman-token': 'fa69cc80-209c-6703-0bd0-1960daa9f4fc',
      'cache-control': 'no-cache',
      projectname: 'jarvis-apis',
-     token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InByaXllc2guc3JpdjIwMTdAZ21haWwuY29tIiwiZXhwaXJ5X2RhdGUiOjE1ODc3ODQ4NDQuMTAxNTI4fQ.nrYv53do9NIRzQcJvKEJ8hDgi8_Slezr5TO7j0I9Qik'
+     token: ''
    } 
 };
 
@@ -118,6 +118,7 @@ const ProjectStatus = {
   async handle(handlerInput) {
     var projectName;
     var speechOutput;
+    const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
     if(handlerInput.requestEnvelope
       && handlerInput.requestEnvelope.request
       && handlerInput.requestEnvelope.request.intent
@@ -125,7 +126,7 @@ const ProjectStatus = {
       && handlerInput.requestEnvelope.request.intent.slots.software
       && handlerInput.requestEnvelope.request.intent.slots.software.resolutions
       && handlerInput.requestEnvelope.request.intent.slots.software.resolutions.resolutionsPerAuthority[0]){
-      projectName = handlerInput.requestEnvelope.request.intent.slots.listName.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+      projectName = handlerInput.requestEnvelope.request.intent.slots.software.resolutions.resolutionsPerAuthority[0].values[0].value.name;
     } else{
       speechOutput = `Sorry, but we don't have any status for this project. What can I help you with? `;
       
@@ -136,20 +137,22 @@ const ProjectStatus = {
       .getResponse();
     }
     projectStatusOptions.headers.projectname = projectName;
+    projectStatusOptions.headers.token = SessionAttributes.LoginStatus.auth_token;
 
     await auth(projectStatusOptions).then((response) => {
       var projectStatus = JSON.parse(response);
-      var progress = projectStatus.release_data.closed_issues/(projectStatus.release_data.closed_issues+projectStatus.release_data.open_issues);
-      var createdDate = new Date(projectStatus.release_data.created_at);
-      var dueDate = new Date(projectStatus.release_data.due_on);
-      var urgentIssues;
-      for(var i = 0; i<projectStatus.release_data.urgent_issues.length; i++){
-        urgentIssues+=`${projectStatus.release_data.urgent_issues[i].title}. `;
+      //SessionAttributes.ProjectStatus = projectStatus;
+      var progress = projectStatus.milestone.closed_issues/(projectStatus.milestone.closed_issues+projectStatus.milestone.open_issues);
+      var createdDate = new Date(projectStatus.milestone.created_at);
+      var dueDate = new Date(projectStatus.milestone.due_on);
+      var urgentIssues = '';
+      for(var i = 0; i<projectStatus.milestone.urgent_issues.length; i++){
+        urgentIssues += `${i+1}. ${projectStatus.milestone.urgent_issues[i].title}. `;
       }
 
-      speechOutput = `The earliest milestone is ${projectStatus.title} which was created on ${createdDate.toString()} has
-       to be completed by ${dueDate}. Current progress on the release is ${progress} and the urgent issues pending for this 
-      release are ${urgentIssues}`;
+      speechOutput = `The earliest milestone is ${projectStatus.milestone.title}, which was created on ${createdDate.toString()}, and has
+       to be completed by ${dueDate}. Current progress on the release is ${progress}, and the urgent issues pending for this 
+      release are: ${urgentIssues}`;
     });
 
     return handlerInput.responseBuilder
@@ -173,8 +176,10 @@ const GithubInstallation = {
     var softwareName = request.intent.slots.software.resolutions.resolutionsPerAuthority[0].values[0].value.name;
     jarvisBotOptions.headers.projectname = softwareName;
     SessionAttributes.SoftwareName = softwareName;
-    
+    var OS;
     SessionAttributes.githubOptions = githubOptions;
+    githubOptions.headers.token = SessionAttributes.LoginStatus.auth_token;
+
     await auth(githubOptions).then((response) => {
       var res = JSON.parse(response);
       var softwareNames = [];
@@ -186,7 +191,7 @@ const GithubInstallation = {
 
     var dockerStatus = false;
     var status = request.intent.slots.dockerStatus.resolutions.resolutionsPerAuthority[0].values[0].value.name;
-
+    
     if(status === `locally`){
       OS = request.intent.slots.OS.resolutions.resolutionsPerAuthority[0].values[0].value.name;
       jarvisBotOptions.headers.os = OS;
@@ -196,6 +201,7 @@ const GithubInstallation = {
       dockerStatus = true;
     }
 
+    jarvisBotOptions.headers.token = SessionAttributes.LoginStatus.auth_token;
     await auth(jarvisBotOptions).then((response) => {
       SessionAttributes.JarvisStatus = JSON.parse(response);
     });
@@ -238,6 +244,7 @@ const TrelloBoards = {
 
     const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
 
+    integrationsOptions.headers.token = SessionAttributes.LoginStatus.auth_token;
     await auth(integrationsOptions).then((response) => {
       SessionAttributes.IntegrationsStatus = JSON.parse(response);
     });
@@ -393,6 +400,7 @@ const CreateTrelloTasks = {
     createTaskOptions.qs.idList = SessionAttributes.ListIdPair[listName];
     createTaskOptions.qs.due = date;
 
+    createTaskOptions.headers.token = SessionAttributes.LoginStatus.auth_token;
     await auth(createTaskOptions).then((response) => {
       if(response){
         speechOutput = `Task created successfully under ${listName}. `;
