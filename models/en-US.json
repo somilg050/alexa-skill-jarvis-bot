@@ -1,0 +1,716 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "jarvis bot",
+            "modelConfiguration": {
+                "fallbackIntentSensitivity": {
+                    "level": "LOW"
+                }
+            },
+            "intents": [
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "trelloBoards",
+                    "slots": [],
+                    "samples": [
+                        "open my trello board",
+                        "please tell me details of my trello board",
+                        "details of my trello board",
+                        "tell me about my trello board"
+                    ]
+                },
+                {
+                    "name": "trelloList",
+                    "slots": [
+                        {
+                            "name": "listName",
+                            "type": "ListName",
+                            "samples": [
+                                "more about {listName}",
+                                "details about {listName}",
+                                "{listName}",
+                                "about {listName}"
+                            ]
+                        }
+                    ],
+                    "samples": [
+                        "how to intsall {listName}",
+                        "list {listName} please",
+                        "tell me about list {listName}",
+                        "{listName} please",
+                        "more about {listName}",
+                        "information about {listName}",
+                        "details about {listName}",
+                        "tell me about {listName}",
+                        "{listName}",
+                        "open {listName}"
+                    ]
+                },
+                {
+                    "name": "createTask",
+                    "slots": [
+                        {
+                            "name": "listName",
+                            "type": "ListName",
+                            "samples": [
+                                "{listName} please",
+                                "in {listName}",
+                                "under {listName}",
+                                "{listName}"
+                            ]
+                        },
+                        {
+                            "name": "taskName",
+                            "type": "AMAZON.EventType",
+                            "samples": [
+                                "{taskName}"
+                            ]
+                        },
+                        {
+                            "name": "dueDate",
+                            "type": "AMAZON.DATE",
+                            "samples": [
+                                "no due date",
+                                "keep it {dueDate}",
+                                "it's {dueDate}",
+                                "{dueDate}"
+                            ]
+                        },
+                        {
+                            "name": "dueTime",
+                            "type": "AMAZON.TIME",
+                            "samples": [
+                                "keep it {dueTime}",
+                                "it's {dueTime}",
+                                "{dueTime}"
+                            ]
+                        }
+                    ],
+                    "samples": [
+                        "create a task under {listName} with due date {dueDate} {dueTime}",
+                        "create a task with due date {dueDate}",
+                        "create a task under {listName}",
+                        "create a task",
+                        "create a task for me",
+                        "assign task {taskName} in {listName}",
+                        "task {taskName} under {listName}",
+                        "create a task for me {listName} {taskName}"
+                    ]
+                },
+                {
+                    "name": "gitGuide",
+                    "slots": [
+                        {
+                            "name": "software",
+                            "type": "Softwares",
+                            "samples": [
+                                "installation guide for {software}",
+                                "{software}"
+                            ]
+                        },
+                        {
+                            "name": "dockerStatus",
+                            "type": "DockerStatus",
+                            "samples": [
+                                "{dockerStatus}",
+                                "install on {dockerStatus}"
+                            ]
+                        },
+                        {
+                            "name": "OS",
+                            "type": "OS",
+                            "samples": [
+                                "on {OS} system",
+                                "in {OS}",
+                                "{OS} please",
+                                "{OS}"
+                            ]
+                        }
+                    ],
+                    "samples": [
+                        "installation guide for {software}",
+                        "install another product",
+                        "help me with installation of a product",
+                        "{OS} please",
+                        "on {OS}",
+                        "{OS}",
+                        "help me with project installation",
+                        "help me with product installation on {dockerStatus}",
+                        "help me in software installation {dockerStatus} on {OS}",
+                        "installation guide",
+                        "installation guide for {software} on {dockerStatus}",
+                        "guide to install a software",
+                        "install a software on {dockerStatus}",
+                        "tell me how to install {software}"
+                    ]
+                },
+                {
+                    "name": "projectStatus",
+                    "slots": [
+                        {
+                            "name": "software",
+                            "type": "Softwares",
+                            "samples": [
+                                "about {software}",
+                                "{software} please",
+                                "it's {software}",
+                                "{software}"
+                            ]
+                        }
+                    ],
+                    "samples": [
+                        "details of my project",
+                        "details of my {software}",
+                        "project status",
+                        "please tell me project status of {software}",
+                        "project status of {software}",
+                        "status of {software}",
+                        "tell my project status"
+                    ]
+                },
+                {
+                    "name": "buildStatus",
+                    "slots": [
+                        {
+                            "name": "project",
+                            "type": "Softwares",
+                            "samples": [
+                                "details of {project}",
+                                "tell me about {project}",
+                                "about {project}",
+                                "{project}",
+                                "it's {project}"
+                            ]
+                        }
+                    ],
+                    "samples": [
+                        "tell me build status of {project}",
+                        "now tell me build status of my project",
+                        "build details of my project",
+                        "build details of {project}",
+                        "give build update of my project",
+                        "build update please",
+                        "build update for my {project}"
+                    ]
+                },
+                {
+                    "name": "implementationDetails",
+                    "slots": [
+                        {
+                            "name": "project",
+                            "type": "Softwares",
+                            "samples": [
+                                "from {project}",
+                                "of {project}",
+                                "{project}"
+                            ]
+                        },
+                        {
+                            "name": "issue",
+                            "type": "Issue",
+                            "samples": [
+                                "{issue} please",
+                                "for {issue}",
+                                "{issue}"
+                            ]
+                        }
+                    ],
+                    "samples": [
+                        "tell me about feature implementation timeline",
+                        "feature implementation timeline",
+                        "What was the feature implementation timeline for {issue} in {project}",
+                        "What was the feature implementation timeline"
+                    ]
+                },
+                {
+                    "name": "AMAZON.YesIntent",
+                    "samples": []
+                }
+            ],
+            "types": [
+                {
+                    "name": "ListName",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "Completed Tasks",
+                                "synonyms": [
+                                    "three",
+                                    "list 3",
+                                    "list three",
+                                    "task which are completed",
+                                    "completed ones"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Ongoing Tasks",
+                                "synonyms": [
+                                    "two",
+                                    "list 2",
+                                    "list two",
+                                    "task which are ongoing",
+                                    "ongoing ones",
+                                    "ongoing task"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Things To Do",
+                                "synonyms": [
+                                    "one",
+                                    "list 1",
+                                    "list one",
+                                    "things to do",
+                                    "to do",
+                                    "things remaining"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "AMAZON.EventType",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "create a task feature"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "trelloboard completed"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "documentation needs to be done"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "report unfinished"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "yet to submit project"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Softwares",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "jarvis-apis",
+                                "synonyms": [
+                                    "jarvis api",
+                                    "API",
+                                    "jarvis API"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "dummytestcases",
+                                "synonyms": [
+                                    "test cases",
+                                    "dummy test cases"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "jarvisbot20.github.io",
+                                "synonyms": [
+                                    "jarvis",
+                                    "jarvis bot"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "DockerStatus",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "docker",
+                                "synonyms": [
+                                    "via docker container",
+                                    "via docker",
+                                    "cotainer",
+                                    "docker container"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "locally",
+                                "synonyms": [
+                                    "host",
+                                    "host OS",
+                                    "OS",
+                                    "local OS"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "OS",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "redhat"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "macos",
+                                "synonyms": [
+                                    "mac OS x",
+                                    "mac"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "windows"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "ubuntu",
+                                "synonyms": [
+                                    "linux"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Issue",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "Migrate DB to mongodb"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Migrate System to a microservice architecture enhancement urgent"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Switch Login/Signup endpoints to node.js"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Zoom Video Analysis",
+                                "synonyms": [
+                                    "zoom video analysis"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Resolve Security Issue in markdown2"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "dialog": {
+            "intents": [
+                {
+                    "name": "trelloList",
+                    "confirmationRequired": false,
+                    "prompts": {},
+                    "slots": [
+                        {
+                            "name": "listName",
+                            "type": "ListName",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.194002963645.1122682158303"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "createTask",
+                    "confirmationRequired": false,
+                    "prompts": {},
+                    "slots": [
+                        {
+                            "name": "listName",
+                            "type": "ListName",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.164792229235.1400674444269"
+                            }
+                        },
+                        {
+                            "name": "taskName",
+                            "type": "AMAZON.EventType",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.164792229235.202942607012"
+                            }
+                        },
+                        {
+                            "name": "dueDate",
+                            "type": "AMAZON.DATE",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.1284913358657.818018411227"
+                            }
+                        },
+                        {
+                            "name": "dueTime",
+                            "type": "AMAZON.TIME",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.1284913358657.384733941424"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "gitGuide",
+                    "confirmationRequired": false,
+                    "prompts": {},
+                    "slots": [
+                        {
+                            "name": "software",
+                            "type": "Softwares",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.709251605485.236503950407"
+                            }
+                        },
+                        {
+                            "name": "dockerStatus",
+                            "type": "DockerStatus",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.709251605485.1359093250907"
+                            }
+                        },
+                        {
+                            "name": "OS",
+                            "type": "OS",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.763767030944.1105961121410"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "projectStatus",
+                    "confirmationRequired": false,
+                    "prompts": {},
+                    "slots": [
+                        {
+                            "name": "software",
+                            "type": "Softwares",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.1117055172837.691655809464"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "buildStatus",
+                    "confirmationRequired": false,
+                    "prompts": {},
+                    "slots": [
+                        {
+                            "name": "project",
+                            "type": "Softwares",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.256375472054.907039213585"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "implementationDetails",
+                    "confirmationRequired": false,
+                    "prompts": {},
+                    "slots": [
+                        {
+                            "name": "project",
+                            "type": "Softwares",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.1480383394871.913651755747"
+                            }
+                        },
+                        {
+                            "name": "issue",
+                            "type": "Issue",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.1480383394871.1476172221988"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "delegationStrategy": "ALWAYS"
+        },
+        "prompts": [
+            {
+                "id": "Elicit.Slot.194002963645.1122682158303",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "name of the list please."
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.164792229235.1400674444269",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Under which list you want to create?"
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.164792229235.202942607012",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Please specify the task name"
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.1284913358657.818018411227",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Due date for the task?"
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.1284913358657.384733941424",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Due time for the task?"
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.709251605485.236503950407",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Which product you want to install?"
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.709251605485.1359093250907",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Would you like to install it on your Host OS or via a docker container?"
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.763767030944.1105961121410",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "In which OS you want to install?"
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.1117055172837.691655809464",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Of which project you want to know?"
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.256375472054.907039213585",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Of which project you want to know?"
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.1480383394871.1476172221988",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "For which feature do you want it?"
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.1480383394871.913651755747",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Of which project you want to know?"
+                    }
+                ]
+            }
+        ]
+    }
+}

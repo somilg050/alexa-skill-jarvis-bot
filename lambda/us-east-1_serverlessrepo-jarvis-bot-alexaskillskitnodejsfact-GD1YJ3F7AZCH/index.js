@@ -81,6 +81,17 @@ var buildResultOptions = { method: 'GET',
    } 
 };
 
+var featureOptions = { method: 'GET',
+  url: 'https://codefundo2019.tk/summary/featuredev',
+  headers: 
+   { 'postman-token': '45e8fe8a-7b8e-654f-0228-12a07027088f',
+     'cache-control': 'no-cache',
+     issuename: 'Zoom Video Analysis',
+     projectname: 'jarvis-apis',
+     token: '' 
+   } 
+};
+
 async function auth(options) {
   return new Promise((resolve) => {
     request(options, function (error, response, body) {
@@ -116,6 +127,88 @@ const LaunchRequest = {
     return handlerInput.responseBuilder
       .speak(speechOutput)
       .reprompt(speechOutput)
+      .getResponse();
+  }
+};
+
+const FeatureImplementation = {
+  canHandle(handlerInput) {
+    return (handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'implementationDetails');
+  },
+  async handle(handlerInput) {
+    var projectName;
+    var issueName;
+    var speechOutput;
+    const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+    if(handlerInput.requestEnvelope
+      && handlerInput.requestEnvelope.request
+      && handlerInput.requestEnvelope.request.intent
+      && handlerInput.requestEnvelope.request.intent.slots
+      && handlerInput.requestEnvelope.request.intent.slots.project
+      && handlerInput.requestEnvelope.request.intent.slots.project.resolutions
+      && handlerInput.requestEnvelope.request.intent.slots.project.resolutions.resolutionsPerAuthority[0]){
+      projectName = handlerInput.requestEnvelope.request.intent.slots.project.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+    } else{
+      speechOutput = `Sorry, but we don't have any status for this project. What can I help you with? `;
+      
+      return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(speechOutput)
+      .withShouldEndSession(false)
+      .getResponse();
+    }
+    if(handlerInput.requestEnvelope
+      && handlerInput.requestEnvelope.request
+      && handlerInput.requestEnvelope.request.intent
+      && handlerInput.requestEnvelope.request.intent.slots
+      && handlerInput.requestEnvelope.request.intent.slots.issue
+      && handlerInput.requestEnvelope.request.intent.slots.issue.resolutions
+      && handlerInput.requestEnvelope.request.intent.slots.issue.resolutions.resolutionsPerAuthority[0]){
+      issueName = handlerInput.requestEnvelope.request.intent.slots.issue.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+    } else{
+      speechOutput = `Sorry, we don't have project implementation for that issue. What can I help you with? `;
+      
+      return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(speechOutput)
+      .withShouldEndSession(false)
+      .getResponse();
+    }
+    featureOptions.headers.projectname = projectName;
+    featureOptions.headers.issuename = issueName;
+    featureOptions.headers.token = SessionAttributes.LoginStatus.auth_token;
+
+    await auth(featureOptions).then((response) => {
+      var featureStatus = JSON.parse(response);
+      SessionAttributes.FeatureStatus = featureStatus;
+      speechOutput = `${featureStatus.metadata_string} Would you like to know the change history as well? `;
+      SessionAttributes.ChangeHistory = true;
+    });
+
+    return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(speechOutput)
+      .withShouldEndSession(false)
+      .getResponse();
+  },
+};
+
+const YesIntentHandler = {
+  canHandle(handlerInput) {
+    const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+    return (handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'AMAZON.YesIntent'
+      && SessionAttributes.ChangeHistory === true);
+  },
+  handle(handlerInput){
+    const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+    var speechOutput = `${SessionAttributes.FeatureStatus.change_history} What else can I help you with?`;
+
+    return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(speechOutput)
+      .withShouldEndSession(false)
       .getResponse();
   }
 };
@@ -459,7 +552,7 @@ const CreateTrelloTasks = {
     await auth(createTaskOptions).then((response) => {
       if(response){
         speechOutput = `Task created successfully under ${listName}. What else can I help you with? `;
-      };
+      }
     });
 
     return handlerInput.responseBuilder
@@ -562,6 +655,7 @@ const skillBuilder = Alexa.SkillBuilders.custom();
 exports.handler = skillBuilder
   .addRequestHandlers(
     LaunchRequest,
+    FeatureImplementation,
     BuildStatus,
     GithubInstallation,
     ProjectStatus,
@@ -570,6 +664,7 @@ exports.handler = skillBuilder
     CreateTrelloTasks,
     HelpIntentHandler,
     CancelAndStopIntentHandler,
+    YesIntentHandler,
     SessionEndedRequestHandler,
     RepeatHandler,
   )
