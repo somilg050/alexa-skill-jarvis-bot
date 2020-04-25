@@ -71,6 +71,16 @@ var projectStatusOptions = { method: 'GET',
    } 
 };
 
+var buildResultOptions = { method: 'GET',
+  url: 'https://codefundo2019.tk/buildresult',
+  headers: 
+   { 'postman-token': '02745993-5002-d612-2661-41ec83936dda',
+     'cache-control': 'no-cache',
+     projectname: 'dummytestcases',
+     token: '' 
+   } 
+};
+
 async function auth(options) {
   return new Promise((resolve) => {
     request(options, function (error, response, body) {
@@ -110,6 +120,49 @@ const LaunchRequest = {
   }
 };
 
+const BuildStatus = {
+  canHandle(handlerInput) {
+    return (handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'buildStatus');
+  },
+  async handle(handlerInput) {
+    var projectName;
+    var speechOutput;
+    const SessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+    if(handlerInput.requestEnvelope
+      && handlerInput.requestEnvelope.request
+      && handlerInput.requestEnvelope.request.intent
+      && handlerInput.requestEnvelope.request.intent.slots
+      && handlerInput.requestEnvelope.request.intent.slots.software
+      && handlerInput.requestEnvelope.request.intent.slots.software.resolutions
+      && handlerInput.requestEnvelope.request.intent.slots.software.resolutions.resolutionsPerAuthority[0]){
+      projectName = handlerInput.requestEnvelope.request.intent.slots.software.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+    } else{
+      speechOutput = `Sorry, but we don't have any status for this project. What can I help you with? `;
+      
+      return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(speechOutput)
+      .withShouldEndSession(false)
+      .getResponse();
+    }
+    buildResultOptions.headers.projectname = projectName;
+    buildResultOptions.headers.token = SessionAttributes.LoginStatus.auth_token;
+
+    await auth(buildResultOptions).then((response) => {
+      var buildStatus = JSON.parse(response);
+    
+      speechOutput = `${buildStatus.message} What else can I help you with? `;
+    });
+
+    return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(speechOutput)
+      .withShouldEndSession(false)
+      .getResponse();
+  },
+};
+
 const ProjectStatus = {
   canHandle(handlerInput) {
     return (handlerInput.requestEnvelope.request.type === 'IntentRequest'
@@ -144,7 +197,9 @@ const ProjectStatus = {
       //SessionAttributes.ProjectStatus = projectStatus;
       var progress = projectStatus.milestone.closed_issues/(projectStatus.milestone.closed_issues+projectStatus.milestone.open_issues);
       var createdDate = new Date(projectStatus.milestone.created_at);
+      createdDate = createdDate.toString().replace(' GMT+0000', '');
       var dueDate = new Date(projectStatus.milestone.due_on);
+      dueDate = dueDate.toString().replace(' GMT+0000', '');
       var urgentIssues = '';
       for(var i = 0; i<projectStatus.milestone.urgent_issues.length; i++){
         urgentIssues += `${i+1}. ${projectStatus.milestone.urgent_issues[i].title}. `;
@@ -152,7 +207,7 @@ const ProjectStatus = {
 
       speechOutput = `The earliest milestone is ${projectStatus.milestone.title}, which was created on ${createdDate.toString()}, and has
        to be completed by ${dueDate}. Current progress on the release is ${progress}, and the urgent issues pending for this 
-      release are: ${urgentIssues}`;
+      release are: ${urgentIssues}. What else can I help you with? `;
     });
 
     return handlerInput.responseBuilder
@@ -225,7 +280,7 @@ const GithubInstallation = {
         }
       }
     }
-    speechOutput += ` Your Product Installation Guide is completed. Now how can I help you? `;
+    speechOutput += ` Your Product Installation Guide is completed. What else can I help you with? `;
 
     return handlerInput.responseBuilder
       .speak(speechOutput)
@@ -347,11 +402,11 @@ const TrelloLists = {
       .then((response) => {
         const data = JSON.parse(response);
         if(data.length === 0){
-          speechOutput += `I can see you don't have any task created yet. Please visit trello.com and create tasks.`;
+          speechOutput += `I can see you don't have any task created yet. Please visit trello.com and create tasks. What else can I help you with? `;
           return handlerInput.responseBuilder
           .speak(speechOutput)
           .reprompt(speechOutput)
-          .withShouldEndSession(true)
+          .withShouldEndSession(false)
           .getResponse();
         }
         else{
@@ -365,7 +420,7 @@ const TrelloLists = {
               var date = new Date(data[i].due);
               date = date.toString();
               date = date.replace(' GMT+0000', '');
-              speechOutput += `With Due date: ${date} `;
+              speechOutput += `With Due date: ${date}. What else can I help you with? `;
             }
           }
         }
@@ -403,7 +458,7 @@ const CreateTrelloTasks = {
     createTaskOptions.headers.token = SessionAttributes.LoginStatus.auth_token;
     await auth(createTaskOptions).then((response) => {
       if(response){
-        speechOutput = `Task created successfully under ${listName}. `;
+        speechOutput = `Task created successfully under ${listName}. What else can I help you with? `;
       };
     });
 
@@ -422,7 +477,10 @@ const HelpIntentHandler = {
       && handlerInput.requestEnvelope.request.intent.name === 'AMAZON.HelpIntent';
   },
   handle(handlerInput) {
-    const speechText = `You are in help intent`;
+    const speechText = `I can help you with your trello board, like fetching data or task creation etc.. 
+    You can ask me for project installation guides or Build/Project status of your projects. 
+    What can I help you with?` ;
+    
     return handlerInput.responseBuilder
       .speak(speechText)
       .reprompt(speechText)
@@ -465,7 +523,7 @@ const ErrorHandler = {
     console.log(`Error handled: ${error.message}`);
 
     return handlerInput.responseBuilder
-      .speak(`Sorry, I didn't get that.`)
+      .speak(`Sorry, I didn't have information for that, but no worry, I will learn. Cause I'm Jarvis.`)
       .reprompt(`Sorry, I didn't get that.`)
       .getResponse();
   },
@@ -478,7 +536,7 @@ const RepeatHandler = {
   },
   handle(handlerInput) {
     return handlerInput.responseBuilder
-      .speak(`lol`)
+      .speak(`What can I help you with? `)
       .withShouldEndSession(false)
       .getResponse();
   },
@@ -504,6 +562,7 @@ const skillBuilder = Alexa.SkillBuilders.custom();
 exports.handler = skillBuilder
   .addRequestHandlers(
     LaunchRequest,
+    BuildStatus,
     GithubInstallation,
     ProjectStatus,
     TrelloBoards,
